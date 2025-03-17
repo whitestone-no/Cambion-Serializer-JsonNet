@@ -63,13 +63,20 @@ jobs:
       with:
         dotnet-version: 8.x
     - name: Run tests
-      run: dotnet test
+      run: dotnet test --logger trx --results-directory ./testresults
     - name: Build & Pack
       run: dotnet pack /p:PackageVersion=${{ needs.gitversion.outputs.gitversionSemVerFull }} /p:Version=${{ needs.gitversion.outputs.gitversionSemVer }} /p:InformationalVersion=${{ needs.gitversion.outputs.gitversionSemVerFull }} -o ./publish -c Release
-    - name: Upload artifact
+    - name: Upload test results artifact
       uses: actions/upload-artifact@v4
       with:
-        name: package-${{ needs.gitversion.outputs.gitversionSemVerFull }}
+        name: testresults
+        path: ${{ github.workspace }}/testresults
+      # Use always() to always run this step to publish test results when there are test failures
+      if: ${{ always() }}
+    - name: Upload package artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: package
         path: ${{ github.workspace }}/publish
   deploy:
     name: Deploy NuGet package
@@ -80,6 +87,6 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: package-${{ needs.gitversion.outputs.gitversionSemVerFull }}
+          name: package
       - name: Deploy package to NuGet
         run: dotnet nuget push "*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
