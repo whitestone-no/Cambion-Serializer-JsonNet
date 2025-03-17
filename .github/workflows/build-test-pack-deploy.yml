@@ -63,7 +63,7 @@ jobs:
     - name: Run tests
       run: dotnet test
     - name: Build & Pack
-      run: dotnet pack /p:PackageVersion=${{ needs.gitversion.outputs.gitversionSemVerFull }} /p:Version=${{ needs.gitversion.outputs.gitversionSemVer }}/p:InformationalVersion=${{ needs.gitversion.outputs.gitversionSemVerFull }} -o ./publish -c Release
+      run: dotnet pack /p:PackageVersion=${{ needs.gitversion.outputs.gitversionSemVerFull }} /p:Version=${{ needs.gitversion.outputs.gitversionSemVer }} /p:InformationalVersion=${{ needs.gitversion.outputs.gitversionSemVerFull }} -o ./publish -c Release
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
