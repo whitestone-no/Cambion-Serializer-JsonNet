@@ -66,18 +66,24 @@ jobs:
       run: dotnet test --logger trx --results-directory ./testresults
     - name: Build & Pack
       run: dotnet pack /p:PackageVersion=${{ needs.gitversion.outputs.gitversionSemVerFull }} /p:Version=${{ needs.gitversion.outputs.gitversionSemVer }} /p:InformationalVersion=${{ needs.gitversion.outputs.gitversionSemVerFull }} -o ./publish -c Release
+    - name: Test Report
+      uses: dorny/test-reporter@v2
+      if: ${{ always() }} # run this step even if previous step failed
+      with:
+        name: Test results
+        path: ./testresults/*.trx
+        reporter: dotnet-trx
     - name: Upload test results artifact
       uses: actions/upload-artifact@v4
       with:
         name: testresults
-        path: ${{ github.workspace }}/testresults
-      # Use always() to always run this step to publish test results when there are test failures
-      if: ${{ always() }}
+        path: ./testresults
+      if: ${{ always() }} # run this step even if previous step failed
     - name: Upload package artifact
       uses: actions/upload-artifact@v4
       with:
         name: package
-        path: ${{ github.workspace }}/publish
+        path: ./publish
   deploy:
     name: Deploy NuGet package
     runs-on: ubuntu-latest
